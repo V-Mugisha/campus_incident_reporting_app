@@ -64,4 +64,28 @@ void main() {
     expect(map['status'], 'resolved');
     expect(map['reportedBy'], 'u');
   });
+
+  test('parses reportedByName and statusHistory', () {
+    final incident = Incident.fromFirestore('id4', {
+      'reportedByName': 'Amina Hassan',
+      'statusHistory': [
+        {
+          'status': 'submitted',
+          'changedBy': 'u1',
+          'timestamp': Timestamp.fromDate(DateTime(2026, 1, 1)),
+        },
+        {
+          'status': 'inProgress',
+          'changedBy': 'u2',
+          'timestamp': Timestamp.fromDate(DateTime(2026, 1, 2)),
+        },
+      ],
+    });
+
+    expect(incident.reportedByName, 'Amina Hassan');
+    expect(incident.statusHistory.length, 2);
+    expect(incident.statusHistory[0].status, IncidentStatus.submitted);
+    expect(incident.statusHistory[1].status, IncidentStatus.inProgress);
+    expect(incident.statusHistory[1].changedBy, 'u2');
+  });
 }

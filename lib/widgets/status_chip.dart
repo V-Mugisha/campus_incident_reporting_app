@@ -5,9 +5,10 @@ import '../theme/app_theme.dart';
 
 /// A pill-shaped status badge. Maps [IncidentStatus] to label + colors.
 class StatusChip extends StatelessWidget {
-  const StatusChip({super.key, required this.status});
+  const StatusChip({super.key, required this.status, this.fontSize = 12});
 
   final IncidentStatus status;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class StatusChip extends StatelessWidget {
       ),
       child: Text(
         status.label,
-        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
+        style: TextStyle(color: fg, fontSize: fontSize, fontWeight: FontWeight.w600),
       ),
     );
   }

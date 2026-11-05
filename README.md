@@ -22,4 +22,11 @@ problems, and safety concerns - and track their resolution.
 2. Connect a Firebase project (`flutterfire configure`) to generate Firebase options
 3. Run on an emulator or physical device: `flutter run`
 
+## Firestore index (required)
+The "My Reports" screen queries the `incidents` collection with
+`where("reportedBy", isEqualTo: uid)` + `orderBy("createdAt", descending)`. This
+needs a **composite index** on `reportedBy` (ascending) + `createdAt` (descending).
+On the first run the app logs an error containing a link that creates the index in
+one click - open it in the Firebase console and create it.
+
 > Note: this app targets Android/iOS; it is not intended to run in a browser.

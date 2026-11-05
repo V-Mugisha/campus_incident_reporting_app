@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/placeholder_incidents.dart';
+import '../../models/incident.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/incident_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../utils/snackbar.dart';
+import '../../widgets/empty_state.dart';
 import '../../widgets/incident_card.dart';
 import '../../widgets/section_header.dart';
+import '../../widgets/skeleton_card.dart';
 import '../../widgets/summary_card.dart';
 import '../../widgets/user_avatar.dart';
+import 'incident_details_screen.dart';
 import 'report_incident_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -20,11 +24,15 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
     final nav = context.read<NavigationProvider>();
+    context.watch<IncidentProvider>();
 
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
-          // TODO: refresh real data when wired to IncidentProvider.
+          final uid = context.read<AuthProvider>().currentUser?.id;
+          if (uid != null) {
+            context.read<IncidentProvider>().startListening(uid);
+          }
           await Future.delayed(const Duration(milliseconds: 400));
         },
         child: SingleChildScrollView(
@@ -84,8 +92,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final greeting =
-        userName.isEmpty ? 'Hello 👋' : 'Hello, $userName 👋';
+    final greeting = userName.isEmpty ? 'Hello 👋' : 'Hello, $userName 👋';
     return Row(
       children: [
         Expanded(
@@ -332,50 +339,73 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = placeholderSummary;
+    final p = context.watch<IncidentProvider>();
+    final nav = context.read<NavigationProvider>();
+
+    void openFiltered(String? status) {
+      p.setStatusFilter(status);
+      nav.setIndex(1);
+    }
+
     return Row(
       children: [
         Expanded(
-          child: SummaryCard(
-            label: 'My Reports',
-            count: s.myReports,
-            backgroundColor: AppColors.primaryLight,
-            icon: Icons.description_outlined,
-            iconColor: AppColors.primary,
+          child: _tap(
+            () => openFiltered(null),
+            child: SummaryCard(
+              label: 'My Reports',
+              count: p.totalCount,
+              backgroundColor: AppColors.primaryLight,
+              icon: Icons.description_outlined,
+              iconColor: AppColors.primary,
+            ),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: SummaryCard(
-            label: 'In Progress',
-            count: s.inProgress,
-            backgroundColor: AppColors.tileBlueBg,
-            icon: Icons.schedule_rounded,
-            iconColor: AppColors.tileBlue,
+          child: _tap(
+            () => openFiltered(IncidentStatus.inProgress.name),
+            child: SummaryCard(
+              label: 'In Progress',
+              count: p.inProgressCount,
+              backgroundColor: AppColors.tileBlueBg,
+              icon: Icons.schedule_rounded,
+              iconColor: AppColors.tileBlue,
+            ),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: SummaryCard(
-            label: 'Resolved',
-            count: s.resolved,
-            backgroundColor: AppColors.statusResolvedBg,
-            icon: Icons.check_circle_rounded,
-            iconColor: AppColors.statusResolvedText,
+          child: _tap(
+            () => openFiltered(IncidentStatus.resolved.name),
+            child: SummaryCard(
+              label: 'Resolved',
+              count: p.resolvedCount,
+              backgroundColor: AppColors.statusResolvedBg,
+              icon: Icons.check_circle_rounded,
+              iconColor: AppColors.statusResolvedText,
+            ),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: SummaryCard(
-            label: 'Submitted',
-            count: s.submitted,
-            backgroundColor: AppColors.tilePinkBg,
-            icon: Icons.error_rounded,
-            iconColor: AppColors.tilePink,
+          child: _tap(
+            () => openFiltered(IncidentStatus.submitted.name),
+            child: SummaryCard(
+              label: 'Submitted',
+              count: p.submittedCount,
+              backgroundColor: AppColors.tilePinkBg,
+              icon: Icons.error_rounded,
+              iconColor: AppColors.tilePink,
+            ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _tap(VoidCallback onTap, {required Widget child}) {
+    return GestureDetector(onTap: onTap, child: child);
   }
 }
 
@@ -384,55 +414,40 @@ class _RecentReports extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final incidents = placeholderIncidents.take(3).toList();
-    if (incidents.isEmpty) return const _EmptyState();
+    final p = context.watch<IncidentProvider>();
 
-    return Column(
-      children: [
-        for (var i = 0; i < incidents.length; i++) ...[
-          if (i > 0) const SizedBox(height: 12),
-          IncidentCard(incident: incidents[i]),
+    if (p.isLoading && p.allMine.isEmpty) {
+      return const Column(
+        children: [
+          SkeletonCard(),
+          SizedBox(height: 12),
+          SkeletonCard(),
         ],
-      ],
-    );
-  }
-}
+      );
+    }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+    if (p.allMine.isEmpty) {
+      return const EmptyState(
+        icon: Icons.inbox_outlined,
+        title: 'No reports yet',
+        subtitle: 'Tap Report to submit your first issue.',
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
+    final recent = p.allMine.take(3).toList();
     return Column(
       children: [
-        const SizedBox(height: 32),
-        Container(
-          width: 88,
-          height: 88,
-          decoration: const BoxDecoration(
-            color: AppColors.primaryLight,
-            shape: BoxShape.circle,
+        for (var i = 0; i < recent.length; i++) ...[
+          if (i > 0) const SizedBox(height: 12),
+          IncidentCard(
+            incident: recent[i],
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => IncidentDetailsScreen(incidentId: recent[i].id),
+              ),
+            ),
           ),
-          child: const Icon(
-            Icons.inbox_outlined,
-            color: AppColors.primary,
-            size: 40,
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'No reports yet',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Tap Report to submit your first issue.',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-        ),
+        ],
       ],
     );
   }

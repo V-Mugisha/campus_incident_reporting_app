@@ -6,46 +6,116 @@ import '../models/app_user.dart';
 import '../models/incident.dart';
 import '../models/incident_category.dart';
 import '../services/incident_service.dart';
+import '../utils/incident_filters.dart';
 
-/// Holds the list of incidents and exposes submit/update operations.
+/// Holds the signed-in student's reports plus search/filter state.
 class IncidentProvider extends ChangeNotifier {
   IncidentProvider({IncidentService? service})
       : _service = service ?? IncidentService();
 
   final IncidentService _service;
 
-  List<Incident> _incidents = [];
+  List<Incident> _allMine = [];
   StreamSubscription<List<Incident>>? _subscription;
   bool _loading = false;
-  String? _error;
-  bool _isSubmitting = false;
   String? _errorMessage;
+  bool _isSubmitting = false;
+  String? _submitError;
 
-  List<Incident> get incidents => _incidents;
-  bool get loading => _loading;
-  String? get error => _error;
-  bool get isSubmitting => _isSubmitting;
+  String _searchQuery = '';
+  String? _statusFilter;
+  String? _categoryFilter;
+
+  List<Incident> get allMine => _allMine;
+  bool get isLoading => _loading;
   String? get errorMessage => _errorMessage;
+  bool get isSubmitting => _isSubmitting;
+  String? get submitError => _submitError;
 
-  void load() {
+  String get searchQuery => _searchQuery;
+  String? get statusFilter => _statusFilter;
+  String? get categoryFilter => _categoryFilter;
+
+  bool get hasActiveFilters =>
+      _searchQuery.isNotEmpty ||
+      _statusFilter != null ||
+      _categoryFilter != null;
+
+  List<Incident> get filteredIncidents => filterIncidents(
+        _allMine,
+        query: _searchQuery,
+        status: _statusFilter,
+        category: _categoryFilter,
+      );
+
+  int get totalCount => _allMine.length;
+  int get submittedCount => _countBy(IncidentStatus.submitted);
+  int get inProgressCount => _countBy(IncidentStatus.inProgress);
+  int get resolvedCount => _countBy(IncidentStatus.resolved);
+
+  int _countBy(IncidentStatus status) =>
+      _allMine.where((i) => i.status == status).length;
+
+  void setSearch(String query) {
+    if (_searchQuery == query) return;
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  void setStatusFilter(String? status) {
+    if (_statusFilter == status) return;
+    _statusFilter = status;
+    notifyListeners();
+  }
+
+  void setCategoryFilter(String? category) {
+    if (_categoryFilter == category) return;
+    _categoryFilter = category;
+    notifyListeners();
+  }
+
+  void clearFilters() {
+    if (!hasActiveFilters) return;
+    _searchQuery = '';
+    _statusFilter = null;
+    _categoryFilter = null;
+    notifyListeners();
+  }
+
+  void startListening(String uid) {
     _subscription?.cancel();
+    _subscription = null;
     _loading = true;
-    _error = null;
+    _errorMessage = null;
     notifyListeners();
 
-    _subscription = _service.streamIncidents().listen(
+    _subscription = _service.watchMyIncidents(uid).listen(
       (list) {
-        _incidents = list;
+        _allMine = list;
         _loading = false;
         notifyListeners();
       },
-      onError: (Object e) {
+      onError: (Object _) {
         _loading = false;
-        _error = e.toString();
+        _errorMessage = "Couldn't load your reports.";
         notifyListeners();
       },
     );
   }
+
+  void stopListening() {
+    _subscription?.cancel();
+    _subscription = null;
+    _allMine = [];
+    _searchQuery = '';
+    _statusFilter = null;
+    _categoryFilter = null;
+    _loading = false;
+    _errorMessage = null;
+  }
+
+  /// Live single-incident stream used by the details screen.
+  Stream<Incident?> watchIncident(String id) => _service.watchIncident(id);
 
   Future<bool> submitIncident({
     required IncidentCategory category,
@@ -55,7 +125,7 @@ class IncidentProvider extends ChangeNotifier {
     String? location,
   }) async {
     _isSubmitting = true;
-    _errorMessage = null;
+    _submitError = null;
     notifyListeners();
 
     try {
@@ -72,18 +142,17 @@ class IncidentProvider extends ChangeNotifier {
       return true;
     } catch (_) {
       _isSubmitting = false;
-      _errorMessage = "Couldn't submit your report. Please try again.";
+      _submitError = "Couldn't submit your report. Please try again.";
       notifyListeners();
       return false;
     }
   }
 
   Future<void> updateStatus(String id, IncidentStatus status) async {
-    _error = null;
     try {
       await _service.updateStatus(id, status);
     } catch (e) {
-      _error = e.toString();
+      _errorMessage = e.toString();
       notifyListeners();
       rethrow;
     }

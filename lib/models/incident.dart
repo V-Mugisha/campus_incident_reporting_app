@@ -20,6 +20,19 @@ enum IncidentStatus {
   }
 }
 
+/// A single entry in an incident's status history.
+class StatusEntry {
+  const StatusEntry({
+    required this.status,
+    required this.changedBy,
+    required this.timestamp,
+  });
+
+  final IncidentStatus status;
+  final String changedBy;
+  final DateTime timestamp;
+}
+
 /// An incident report submitted by a student.
 class Incident {
   const Incident({
@@ -32,6 +45,8 @@ class Incident {
     required this.createdAt,
     this.location,
     this.imageUrl,
+    this.reportedByName,
+    this.statusHistory = const [],
     this.updatedAt,
   });
 
@@ -43,6 +58,8 @@ class Incident {
   final String? imageUrl;
   final IncidentStatus status;
   final String reportedBy;
+  final String? reportedByName;
+  final List<StatusEntry> statusHistory;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -56,6 +73,19 @@ class Incident {
       imageUrl: data['imageUrl'] as String?,
       status: IncidentStatus.fromName(data['status'] as String?),
       reportedBy: data['reportedBy'] as String? ?? '',
+      reportedByName: data['reportedByName'] as String?,
+      statusHistory: (data['statusHistory'] as List<dynamic>?)
+              ?.map((e) => e as Map<String, dynamic>)
+              .map(
+                (e) => StatusEntry(
+                  status: IncidentStatus.fromName(e['status'] as String?),
+                  changedBy: e['changedBy'] as String? ?? '',
+                  timestamp:
+                      (e['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                ),
+              )
+              .toList() ??
+          const [],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -70,6 +100,16 @@ class Incident {
       'imageUrl': imageUrl,
       'status': status.name,
       'reportedBy': reportedBy,
+      'reportedByName': reportedByName,
+      'statusHistory': statusHistory
+          .map(
+            (e) => {
+              'status': e.status.name,
+              'changedBy': e.changedBy,
+              'timestamp': Timestamp.fromDate(e.timestamp),
+            },
+          )
+          .toList(),
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt == null ? null : Timestamp.fromDate(updatedAt!),
     };

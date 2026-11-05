@@ -35,6 +35,11 @@ class AppColors {
   static const Color categoryAccent = Color(0xFF3B82F6);
   static const Color dashedBorder = Color(0xFFCFCBEA);
   static const Color photoZoneBg = Color(0xFFFAFAFF);
+
+  static const Color timelineIdle = Color(0xFFD9D8E6);
+  static const Color timelineIdleBg = Color(0xFFF1F0F9);
+  static const Color skeletonBase = Color(0xFFECEBF5);
+  static const Color skeletonHighlight = Color(0xFFF7F6FC);
 }
 
 class AppTheme {

@@ -140,7 +140,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     } else {
       showErrorSnackBar(
         context,
-        incidents.errorMessage ?? "Couldn't submit your report. Please try again.",
+        incidents.submitError ?? "Couldn't submit your report. Please try again.",
       );
     }
   }

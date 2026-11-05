@@ -22,6 +22,29 @@ class IncidentService {
         );
   }
 
+  /// Streams the signed-in student's own reports, newest first.
+  ///
+  /// Requires a composite index on `reportedBy` (asc) + `createdAt` (desc).
+  Stream<List<Incident>> watchMyIncidents(String uid) {
+    return _firestore
+        .collection('incidents')
+        .where('reportedBy', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => Incident.fromFirestore(doc.id, doc.data()))
+              .toList(),
+        );
+  }
+
+  Stream<Incident?> watchIncident(String id) {
+    return _firestore.collection('incidents').doc(id).snapshots().map(
+          (doc) =>
+              doc.exists ? Incident.fromFirestore(doc.id, doc.data()!) : null,
+        );
+  }
+
   Future<void> submitIncident({
     required IncidentCategory category,
     required String title,
