@@ -88,4 +88,30 @@ void main() {
     expect(incident.statusHistory[1].status, IncidentStatus.inProgress);
     expect(incident.statusHistory[1].changedBy, 'u2');
   });
+
+  group('reporterLabel', () {
+    Incident build({String? reportedByName}) => Incident(
+          id: 'i',
+          title: 't',
+          category: IncidentCategory.safety,
+          description: 'd',
+          status: IncidentStatus.submitted,
+          reportedBy: 'u',
+          reportedByName: reportedByName,
+          createdAt: DateTime(2026),
+        );
+
+    test('returns the reported name when present', () {
+      expect(build(reportedByName: 'Jane Doe').reporterLabel, 'Jane Doe');
+    });
+
+    test('falls back to Unknown when null', () {
+      expect(build().reporterLabel, 'Unknown');
+    });
+
+    test('falls back to Unknown when empty or whitespace', () {
+      expect(build(reportedByName: '').reporterLabel, 'Unknown');
+      expect(build(reportedByName: '   ').reporterLabel, 'Unknown');
+    });
+  });
 }

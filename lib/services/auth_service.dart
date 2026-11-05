@@ -109,11 +109,30 @@ class FirebaseAuthService implements AuthService {
     final data = doc.data();
     return AppUser(
       id: uid,
-      name: data?['name'] as String? ?? authUser?.displayName ?? '',
+      name: _resolveName(
+        data?['name'] as String?,
+        authUser?.displayName,
+        authUser?.email,
+      ),
       email: data?['email'] as String? ?? authUser?.email ?? '',
       role: UserRole.fromName(data?['role'] as String?),
       department: data?['department'] as String?,
       createdAt: (data?['createdAt'] as Timestamp?)?.toDate(),
     );
+  }
+
+  /// Resolves a non-empty display name, preferring the stored profile name,
+  /// then the Auth display name, then the email local part.
+  String _resolveName(String? docName, String? displayName, String? email) {
+    final stored = docName?.trim();
+    if (stored != null && stored.isNotEmpty) return stored;
+
+    final display = displayName?.trim();
+    if (display != null && display.isNotEmpty) return display;
+
+    final local = email?.split('@').first.trim();
+    if (local != null && local.isNotEmpty) return local;
+
+    return 'User';
   }
 }

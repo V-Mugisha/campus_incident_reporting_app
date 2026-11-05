@@ -11,6 +11,7 @@ class SummaryCard extends StatelessWidget {
     required this.backgroundColor,
     required this.icon,
     required this.iconColor,
+    this.selected = false,
   });
 
   final String label;
@@ -18,6 +19,7 @@ class SummaryCard extends StatelessWidget {
   final Color backgroundColor;
   final IconData icon;
   final Color iconColor;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +29,18 @@ class SummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
+        border: selected
+            ? Border.all(color: AppColors.primary, width: 2)
+            : null,
+        boxShadow: selected
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

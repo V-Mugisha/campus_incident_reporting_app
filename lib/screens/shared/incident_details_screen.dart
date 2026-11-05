@@ -129,7 +129,7 @@ class _CircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final button = Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
@@ -145,6 +145,8 @@ class _CircleButton extends StatelessWidget {
       ),
       child: Icon(icon, color: AppColors.textPrimary),
     );
+    if (onTap == null) return button;
+    return GestureDetector(onTap: onTap, child: button);
   }
 }
 
@@ -341,7 +343,7 @@ class _SummaryCard extends StatelessWidget {
             icon: Icons.person_outline_rounded,
             label: 'Reported by',
             child: Text(
-              incident.reportedByName ?? 'Unknown',
+              incident.reporterLabel,
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 14,

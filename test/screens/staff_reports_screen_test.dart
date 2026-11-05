@@ -1,13 +1,19 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
+import 'package:campus_incident_reporting_app/models/app_user.dart';
 import 'package:campus_incident_reporting_app/models/incident.dart';
 import 'package:campus_incident_reporting_app/models/incident_category.dart';
+import 'package:campus_incident_reporting_app/models/user_role.dart';
+import 'package:campus_incident_reporting_app/providers/auth_provider.dart';
+import 'package:campus_incident_reporting_app/providers/navigation_provider.dart';
 import 'package:campus_incident_reporting_app/providers/staff_provider.dart';
 import 'package:campus_incident_reporting_app/screens/staff/staff_reports_screen.dart';
+import 'package:campus_incident_reporting_app/services/auth_service.dart';
 import 'package:campus_incident_reporting_app/services/incident_service.dart';
 
 class _FakeService implements IncidentService {
@@ -40,9 +46,50 @@ class _FakeService implements IncidentService {
   }) async {}
 }
 
+class _FakeAuthService implements AuthService {
+  @override
+  Stream<User?> get authStateChanges => const Stream.empty();
+
+  @override
+  Future<AppUser> fetchProfile(String uid) async => AppUser(
+        id: uid,
+        name: '',
+        email: '',
+        role: UserRole.staff,
+      );
+
+  @override
+  Future<void> registerStudent({
+    required String name,
+    required String email,
+    required String password,
+    String? department,
+  }) async {}
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
+
+  @override
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {}
+
+  @override
+  Future<void> signOut() async {}
+}
+
 Widget _wrap(StaffProvider provider) {
-  return ChangeNotifierProvider<StaffProvider>.value(
-    value: provider,
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider<StaffProvider>.value(value: provider),
+      ChangeNotifierProvider<AuthProvider>(
+        create: (_) => AuthProvider(authService: _FakeAuthService()),
+      ),
+      ChangeNotifierProvider<NavigationProvider>(
+        create: (_) => NavigationProvider(),
+      ),
+    ],
     child: const MaterialApp(
       home: Scaffold(body: StaffReportsScreen()),
     ),
@@ -59,7 +106,7 @@ void main() {
     service.controller.add(const <Incident>[]);
     await tester.pumpAndSettle();
 
-    expect(find.text('Review Reports'), findsOneWidget);
+    expect(find.text('Hello 👋'), findsOneWidget);
     expect(find.text('No reports yet'), findsOneWidget);
   });
 

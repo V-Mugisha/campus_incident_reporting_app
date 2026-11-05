@@ -19,45 +19,51 @@ class StaffNavBar extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(left: 16, right: 16, bottom: 12 + bottomInset),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Container(
-            height: 68,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
+      child: SizedBox(
+        height: 68,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SizedBox(
+              width: double.infinity,
+              height: 68,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _StaffNavItem(
-                    icon: Icons.description_outlined,
-                    selectedIcon: Icons.description_rounded,
-                    label: 'Reports',
-                    selected: currentIndex == 0,
-                    onTap: () => onSelect(0),
-                    semanticLabel: 'Reports tab',
-                  ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _StaffNavItem(
+                        icon: Icons.description_outlined,
+                        selectedIcon: Icons.description_rounded,
+                        label: 'Reports',
+                        selected: currentIndex == 0,
+                        onTap: () => onSelect(0),
+                        semanticLabel: 'Reports tab',
+                      ),
+                    ),
+                    Expanded(
+                      child: _StaffNavItem(
+                        icon: Icons.person_outline_rounded,
+                        selectedIcon: Icons.person_rounded,
+                        label: 'Profile',
+                        selected: currentIndex == 1,
+                        onTap: () => onSelect(1),
+                        semanticLabel: 'Profile tab',
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: _StaffNavItem(
-                    icon: Icons.person_outline_rounded,
-                    selectedIcon: Icons.person_rounded,
-                    label: 'Profile',
-                    selected: currentIndex == 1,
-                    onTap: () => onSelect(1),
-                    semanticLabel: 'Profile tab',
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

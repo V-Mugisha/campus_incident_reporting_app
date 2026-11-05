@@ -24,7 +24,7 @@ class StatusTimeline extends StatefulWidget {
 }
 
 class _StatusTimelineState extends State<StatusTimeline>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _fill = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 500),

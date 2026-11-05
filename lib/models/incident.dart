@@ -63,6 +63,12 @@ class Incident {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
+  /// Display name of the reporter, falling back to 'Unknown' when missing.
+  String get reporterLabel {
+    final name = reportedByName;
+    return (name == null || name.trim().isEmpty) ? 'Unknown' : name.trim();
+  }
+
   factory Incident.fromFirestore(String id, Map<String, dynamic> data) {
     return Incident(
       id: id,
