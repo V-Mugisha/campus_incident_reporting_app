@@ -87,6 +87,14 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  void _fillCredentials(String email, String password) {
+    setState(() {
+      _emailController.text = email;
+      _passwordController.text = password;
+      _autovalidate = false;
+    });
+  }
+
   Future<void> _openForgotPassword() async {
     final sent = await showModalBottomSheet<bool>(
       context: context,
@@ -217,6 +225,30 @@ class _LoginScreenState extends State<LoginScreen>
                                       );
                                     },
                                   ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _MockUserButton(
+                                          label: 'Staff User Mock',
+                                          onTap: () => _fillCredentials(
+                                            'staff@gmail.com',
+                                            'admin123',
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _MockUserButton(
+                                          label: 'Student User Mock',
+                                          onTap: () => _fillCredentials(
+                                            'smoketest@example.com',
+                                            'smoketest123',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -320,6 +352,30 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _MockUserButton extends StatelessWidget {
+  const _MockUserButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        side: const BorderSide(color: AppColors.border),
+        minimumSize: const Size.fromHeight(48),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+      ),
+      child: Text(label),
     );
   }
 }
