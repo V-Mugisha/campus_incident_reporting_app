@@ -14,7 +14,7 @@ import '../../widgets/section_header.dart';
 import '../../widgets/skeleton_card.dart';
 import '../../widgets/summary_card.dart';
 import '../../widgets/user_avatar.dart';
-import 'incident_details_screen.dart';
+import '../shared/incident_details_screen.dart';
 import 'report_incident_screen.dart';
 
 class HomeScreen extends StatelessWidget {

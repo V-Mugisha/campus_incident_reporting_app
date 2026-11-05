@@ -7,10 +7,16 @@ import 'status_chip.dart';
 
 /// A compact incident summary row used in lists.
 class IncidentCard extends StatefulWidget {
-  const IncidentCard({super.key, required this.incident, this.onTap});
+  const IncidentCard({
+    super.key,
+    required this.incident,
+    this.onTap,
+    this.showReporter = false,
+  });
 
   final Incident incident;
   final VoidCallback? onTap;
+  final bool showReporter;
 
   @override
   State<IncidentCard> createState() => _IncidentCardState();
@@ -103,6 +109,32 @@ class _IncidentCardState extends State<IncidentCard> {
                               ),
                             ],
                           ),
+                          if (widget.showReporter &&
+                              incident.reportedByName != null &&
+                              incident.reportedByName!.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.person_outline_rounded,
+                                  size: 11,
+                                  color: AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: 3),
+                                Flexible(
+                                  child: Text(
+                                    incident.reportedByName!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                           const SizedBox(height: 5),
                           Row(
                             children: [

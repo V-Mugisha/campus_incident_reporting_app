@@ -6,8 +6,9 @@ import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/incident_provider.dart';
 import 'providers/navigation_provider.dart';
+import 'providers/staff_provider.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/staff/staff_placeholder_screen.dart';
+import 'screens/staff/staff_shell.dart';
 import 'screens/student/student_shell.dart';
 import 'theme/app_theme.dart';
 import 'utils/constants.dart';
@@ -29,6 +30,7 @@ class CampusReportApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => IncidentProvider()),
+        ChangeNotifierProvider(create: (_) => StaffProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: MaterialApp(
@@ -59,7 +61,7 @@ class AuthGate extends StatelessWidget {
       screen = const LoginScreen();
     } else if (auth.isStaff) {
       stateKey = 'staff';
-      screen = const StaffPlaceholderScreen();
+      screen = const StaffShell();
     } else {
       stateKey = 'student';
       screen = const StudentShell();

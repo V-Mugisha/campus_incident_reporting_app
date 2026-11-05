@@ -11,7 +11,7 @@ import '../utils/incident_filters.dart';
 /// Holds the signed-in student's reports plus search/filter state.
 class IncidentProvider extends ChangeNotifier {
   IncidentProvider({IncidentService? service})
-      : _service = service ?? IncidentService();
+      : _service = service ?? FirebaseIncidentService();
 
   final IncidentService _service;
 
@@ -146,16 +146,6 @@ class IncidentProvider extends ChangeNotifier {
       _submitError = "Couldn't submit your report. Please try again.";
       notifyListeners();
       return false;
-    }
-  }
-
-  Future<void> updateStatus(String id, IncidentStatus status) async {
-    try {
-      await _service.updateStatus(id, status);
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-      rethrow;
     }
   }
 

@@ -15,7 +15,7 @@ import '../../widgets/report_search_bar.dart';
 import '../../widgets/skeleton_card.dart';
 import '../../widgets/stats_strip.dart';
 import '../../widgets/status_filter_bar.dart';
-import 'incident_details_screen.dart';
+import '../shared/incident_details_screen.dart';
 import 'report_incident_screen.dart';
 
 class MyReportsScreen extends StatelessWidget {
