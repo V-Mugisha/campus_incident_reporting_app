@@ -30,3 +30,7 @@ class AppSize {
   static const double inputHeight = 52;
   static const double buttonHeight = 54;
 }
+
+/// Extra bottom padding for scrollable tab pages so the floating nav bar
+/// never covers the last item. 90 (bar + button rise) + 12 (margin) + ~26 (inset) + 16 (spacer).
+const double kNavBarClearance = 144;

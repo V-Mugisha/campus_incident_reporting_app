@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../models/app_user.dart';
 import '../models/user_role.dart';
 import '../services/auth_service.dart';
 import '../utils/auth_errors.dart';
 
-/// Holds the current auth state and role for the app.
+/// Holds the current auth state and profile for the app.
 class AuthProvider extends ChangeNotifier {
   AuthProvider({AuthService? authService})
       : _authService = authService ?? FirebaseAuthService() {
@@ -14,30 +15,27 @@ class AuthProvider extends ChangeNotifier {
 
   final AuthService _authService;
 
-  User? _user;
-  UserRole? _role;
+  AppUser? _currentUser;
   bool _initializing = true;
   bool _isLoading = false;
   String? _errorMessage;
 
-  User? get currentUser => _user;
-  UserRole? get role => _role;
+  AppUser? get currentUser => _currentUser;
   bool get initializing => _initializing;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  bool get isSignedIn => _user != null;
-  bool get isStaff => _role == UserRole.staff;
+  bool get isSignedIn => _currentUser != null;
+  bool get isStaff => _currentUser?.role == UserRole.staff;
 
   Future<void> _onAuthChanged(User? user) async {
-    _user = user;
     if (user == null) {
-      _role = null;
+      _currentUser = null;
       _initializing = false;
       notifyListeners();
       return;
     }
-    _role = await _authService.fetchRole(user.uid) ?? UserRole.student;
+    _currentUser = await _authService.fetchProfile(user.uid);
     _initializing = false;
     notifyListeners();
   }
@@ -69,7 +67,13 @@ class AuthProvider extends ChangeNotifier {
     return _guard(() => _authService.sendPasswordResetEmail(email));
   }
 
-  Future<void> signOut() => _authService.signOut();
+  Future<void> signOut() async {
+    await _authService.signOut();
+    _currentUser = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
 
   Future<bool> _guard(Future<void> Function() action) async {
     _isLoading = true;

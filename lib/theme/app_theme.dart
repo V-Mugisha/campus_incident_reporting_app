@@ -18,6 +18,17 @@ class AppColors {
   static const Color error = Color(0xFFE5484D);
   static const Color successBg = Color(0xFFDDF6E8);
   static const Color successText = Color(0xFF1F9D57);
+
+  static const Color statusSubmittedBg = Color(0xFFFFF1D6);
+  static const Color statusSubmittedText = Color(0xFFB7791F);
+  static const Color statusProgressBg = Color(0xFFEDE9FE);
+  static const Color statusProgressText = Color(0xFF6C4DF6);
+  static const Color statusResolvedBg = Color(0xFFDDF6E8);
+  static const Color statusResolvedText = Color(0xFF1F9D57);
+  static const Color tileBlueBg = Color(0xFFE6F0FF);
+  static const Color tileBlue = Color(0xFF3B82F6);
+  static const Color tilePinkBg = Color(0xFFFDE8EC);
+  static const Color tilePink = Color(0xFFE5484D);
 }
 
 class AppTheme {

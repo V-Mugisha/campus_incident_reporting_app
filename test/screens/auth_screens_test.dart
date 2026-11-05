@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
+import 'package:campus_incident_reporting_app/models/app_user.dart';
 import 'package:campus_incident_reporting_app/models/user_role.dart';
 import 'package:campus_incident_reporting_app/providers/auth_provider.dart';
 import 'package:campus_incident_reporting_app/screens/auth/login_screen.dart';
@@ -15,7 +16,12 @@ class FakeAuthService implements AuthService {
   Stream<User?> get authStateChanges => const Stream.empty();
 
   @override
-  Future<UserRole?> fetchRole(String uid) async => null;
+  Future<AppUser> fetchProfile(String uid) async => AppUser(
+        id: uid,
+        name: '',
+        email: '',
+        role: UserRole.student,
+      );
 
   @override
   Future<void> registerStudent({

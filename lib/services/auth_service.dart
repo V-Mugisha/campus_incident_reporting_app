@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../models/app_user.dart';
 import '../models/user_role.dart';
 
 /// Contract for authentication so screens and tests depend on the interface,
@@ -21,7 +22,8 @@ abstract class AuthService {
 
   Future<void> sendPasswordResetEmail(String email);
 
-  Future<UserRole?> fetchRole(String uid);
+  /// Loads the full profile for a user id from `users/{uid}`.
+  Future<AppUser> fetchProfile(String uid);
 }
 
 /// Firebase-backed implementation of [AuthService].
@@ -78,9 +80,17 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
-  Future<UserRole?> fetchRole(String uid) async {
+  Future<AppUser> fetchProfile(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
-    if (!doc.exists) return null;
-    return UserRole.fromName(doc.data()?['role'] as String?);
+    final data = doc.data();
+    final authUser = _auth.currentUser;
+    return AppUser(
+      id: uid,
+      name: data?['name'] as String? ?? authUser?.displayName ?? '',
+      email: data?['email'] as String? ?? authUser?.email ?? '',
+      role: UserRole.fromName(data?['role'] as String?),
+      department: data?['department'] as String?,
+      createdAt: (data?['createdAt'] as Timestamp?)?.toDate(),
+    );
   }
 }
