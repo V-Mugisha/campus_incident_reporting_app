@@ -1,4 +1,4 @@
-package com.example.campus_incident_reporting_app
+package com.victor.campusreport
 
 import io.flutter.embedding.android.FlutterActivity
 
