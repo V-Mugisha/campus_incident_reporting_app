@@ -22,6 +22,9 @@ class AppTextField extends StatelessWidget {
     this.autofillHints,
     this.onSubmitted,
     this.textCapitalization = TextCapitalization.none,
+    this.minLines,
+    this.maxLines,
+    this.maxLength,
     this.enabled = true,
   });
 
@@ -40,6 +43,9 @@ class AppTextField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onSubmitted;
   final TextCapitalization textCapitalization;
+  final int? minLines;
+  final int? maxLines;
+  final int? maxLength;
   final bool enabled;
 
   @override
@@ -78,6 +84,9 @@ class AppTextField extends StatelessWidget {
           autofillHints: autofillHints,
           onFieldSubmitted: onSubmitted,
           textCapitalization: textCapitalization,
+          minLines: minLines,
+          maxLines: maxLines ?? 1,
+          maxLength: maxLength,
           enabled: enabled,
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(

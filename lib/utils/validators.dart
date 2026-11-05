@@ -37,3 +37,38 @@ String? validateConfirmPassword(String? value, String password) {
   if (value != password) return 'Passwords do not match';
   return null;
 }
+
+String? validateTitle(String? value) {
+  final v = value?.trim() ?? '';
+  if (v.isEmpty) return 'Title is required';
+  if (v.length < 5) return 'Title must be at least 5 characters';
+  if (v.length > 80) return 'Title must be at most 80 characters';
+  return null;
+}
+
+String? validateDescription(String? value) {
+  final v = value?.trim() ?? '';
+  if (v.isEmpty) return 'Description is required';
+  if (v.length < 15) {
+    return 'Please add a few more details (at least 15 characters)';
+  }
+  if (v.length > 500) return 'Description must be at most 500 characters';
+  return null;
+}
+
+String? validateCategory(String? value) {
+  if (value == null || value.isEmpty) return 'Please select a category';
+  return null;
+}
+
+String? validateLocation(String? value) {
+  if (value == null || value.isEmpty) return 'Please select a location';
+  return null;
+}
+
+String? validateSpecifyLocation(String? value) {
+  final v = value?.trim() ?? '';
+  if (v.isEmpty) return 'Please specify a location';
+  if (v.length < 3) return 'Location must be at least 3 characters';
+  return null;
+}

@@ -93,4 +93,90 @@ void main() {
       expect(validateConfirmPassword('abc', 'abc'), null);
     });
   });
+
+  group('validateTitle', () {
+    test('rejects empty', () {
+      expect(validateTitle(null), 'Title is required');
+      expect(validateTitle('   '), 'Title is required');
+    });
+
+    test('rejects too short', () {
+      expect(validateTitle('abcd'), 'Title must be at least 5 characters');
+    });
+
+    test('rejects too long', () {
+      expect(
+        validateTitle('a' * 81),
+        'Title must be at most 80 characters',
+      );
+    });
+
+    test('accepts valid', () {
+      expect(validateTitle('Broken tap in Block B'), null);
+    });
+  });
+
+  group('validateDescription', () {
+    test('rejects empty', () {
+      expect(validateDescription(null), 'Description is required');
+    });
+
+    test('rejects too short', () {
+      expect(
+        validateDescription('short'),
+        'Please add a few more details (at least 15 characters)',
+      );
+    });
+
+    test('rejects too long', () {
+      expect(
+        validateDescription('a' * 501),
+        'Description must be at most 500 characters',
+      );
+    });
+
+    test('accepts valid', () {
+      expect(validateDescription('This is a detailed description.'), null);
+    });
+  });
+
+  group('validateCategory', () {
+    test('rejects null or empty', () {
+      expect(validateCategory(null), 'Please select a category');
+      expect(validateCategory(''), 'Please select a category');
+    });
+
+    test('accepts a value', () {
+      expect(validateCategory('water'), null);
+    });
+  });
+
+  group('validateLocation', () {
+    test('rejects null or empty', () {
+      expect(validateLocation(null), 'Please select a location');
+      expect(validateLocation(''), 'Please select a location');
+    });
+
+    test('accepts a value', () {
+      expect(validateLocation('Library'), null);
+    });
+  });
+
+  group('validateSpecifyLocation', () {
+    test('rejects empty', () {
+      expect(validateSpecifyLocation(null), 'Please specify a location');
+      expect(validateSpecifyLocation('   '), 'Please specify a location');
+    });
+
+    test('rejects too short', () {
+      expect(
+        validateSpecifyLocation('ab'),
+        'Location must be at least 3 characters',
+      );
+    });
+
+    test('accepts valid', () {
+      expect(validateSpecifyLocation('Roof'), null);
+    });
+  });
 }

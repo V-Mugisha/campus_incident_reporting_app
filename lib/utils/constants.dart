@@ -34,3 +34,18 @@ class AppSize {
 /// Extra bottom padding for scrollable tab pages so the floating nav bar
 /// never covers the last item. 90 (bar + button rise) + 12 (margin) + ~26 (inset) + 16 (spacer).
 const double kNavBarClearance = 144;
+
+/// Campus locations for the report form dropdown (shared with filters later).
+const List<String> campusLocations = [
+  'Student Residence',
+  'Block A',
+  'Block B',
+  'Block C',
+  'Library',
+  'Cafeteria',
+  'Computer Lab',
+  'Sports Grounds',
+  'Admin Building',
+  'Parking Area',
+  'Other',
+];

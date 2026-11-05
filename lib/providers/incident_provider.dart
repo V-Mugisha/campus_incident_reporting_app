@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+import '../models/app_user.dart';
 import '../models/incident.dart';
+import '../models/incident_category.dart';
 import '../services/incident_service.dart';
 
 /// Holds the list of incidents and exposes submit/update operations.
@@ -17,10 +18,14 @@ class IncidentProvider extends ChangeNotifier {
   StreamSubscription<List<Incident>>? _subscription;
   bool _loading = false;
   String? _error;
+  bool _isSubmitting = false;
+  String? _errorMessage;
 
   List<Incident> get incidents => _incidents;
   bool get loading => _loading;
   String? get error => _error;
+  bool get isSubmitting => _isSubmitting;
+  String? get errorMessage => _errorMessage;
 
   void load() {
     _subscription?.cancel();
@@ -42,26 +47,34 @@ class IncidentProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> submit({
-    required String title,
+  Future<bool> submitIncident({
     required IncidentCategory category,
+    required String title,
     required String description,
-    required String reporterId,
-    File? photo,
+    required AppUser reporter,
+    String? location,
   }) async {
-    _error = null;
+    _isSubmitting = true;
+    _errorMessage = null;
+    notifyListeners();
+
     try {
       await _service.submitIncident(
-        title: title,
         category: category,
+        title: title,
         description: description,
-        reporterId: reporterId,
-        photo: photo,
+        location: location,
+        reportedBy: reporter.id,
+        reportedByName: reporter.name,
       );
-    } catch (e) {
-      _error = e.toString();
+      _isSubmitting = false;
       notifyListeners();
-      rethrow;
+      return true;
+    } catch (_) {
+      _isSubmitting = false;
+      _errorMessage = "Couldn't submit your report. Please try again.";
+      notifyListeners();
+      return false;
     }
   }
 

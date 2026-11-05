@@ -100,7 +100,7 @@ class _Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final url = incident.photoUrl;
+    final url = incident.imageUrl;
     if (url != null && url.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -123,25 +123,14 @@ class _Thumbnail extends StatelessWidget {
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: AppColors.categoryAccent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
-        categoryIcon(incident.category),
-        color: AppColors.primary,
+        incident.category.icon,
+        color: AppColors.categoryAccent,
         size: 26,
       ),
     );
   }
 }
-
-/// Icon for an incident category (shared by card thumbnails and forms).
-IconData categoryIcon(IncidentCategory category) => switch (category) {
-      IncidentCategory.brokenFacility => Icons.build_rounded,
-      IncidentCategory.waterShortage => Icons.water_drop_rounded,
-      IncidentCategory.electricityOutage => Icons.bolt_rounded,
-      IncidentCategory.damagedFurniture => Icons.chair_rounded,
-      IncidentCategory.sanitation => Icons.delete_outline_rounded,
-      IncidentCategory.safetyConcern => Icons.warning_rounded,
-      IncidentCategory.other => Icons.report_gmailerrorred_rounded,
-    };

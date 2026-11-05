@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:campus_incident_reporting_app/models/incident.dart';
+import 'package:campus_incident_reporting_app/models/incident_category.dart';
 
 void main() {
   group('Incident.fromFirestore', () {
@@ -11,22 +12,24 @@ void main() {
 
       final incident = Incident.fromFirestore('id1', {
         'title': 'Broken tap',
-        'category': 'waterShortage',
+        'category': 'water',
         'description': 'No water in block B',
-        'photoUrl': 'https://example.com/photo.jpg',
+        'location': 'Block B',
+        'imageUrl': 'https://example.com/photo.jpg',
         'status': 'inProgress',
-        'reporterId': 'user1',
+        'reportedBy': 'user1',
         'createdAt': Timestamp.fromDate(now),
         'updatedAt': Timestamp.fromDate(updated),
       });
 
       expect(incident.id, 'id1');
       expect(incident.title, 'Broken tap');
-      expect(incident.category, IncidentCategory.waterShortage);
+      expect(incident.category, IncidentCategory.water);
       expect(incident.description, 'No water in block B');
-      expect(incident.photoUrl, 'https://example.com/photo.jpg');
+      expect(incident.location, 'Block B');
+      expect(incident.imageUrl, 'https://example.com/photo.jpg');
       expect(incident.status, IncidentStatus.inProgress);
-      expect(incident.reporterId, 'user1');
+      expect(incident.reportedBy, 'user1');
       expect(incident.createdAt, now);
       expect(incident.updatedAt, updated);
     });
@@ -35,29 +38,30 @@ void main() {
       final incident = Incident.fromFirestore('id2', {});
 
       expect(incident.title, '');
-      expect(incident.category, IncidentCategory.other);
+      expect(incident.category, IncidentCategory.facilities);
       expect(incident.status, IncidentStatus.submitted);
-      expect(incident.photoUrl, isNull);
+      expect(incident.location, isNull);
+      expect(incident.imageUrl, isNull);
       expect(incident.updatedAt, isNull);
     });
   });
 
-  test('toFirestore writes category and status by name', () {
+  test('toFirestore writes category key and fields', () {
     final incident = Incident(
       id: 'id3',
       title: 't',
-      category: IncidentCategory.safetyConcern,
+      category: IncidentCategory.safety,
       description: 'd',
       status: IncidentStatus.resolved,
-      reporterId: 'u',
+      reportedBy: 'u',
       createdAt: DateTime(2026),
     );
 
     final map = incident.toFirestore();
 
     expect(map['title'], 't');
-    expect(map['category'], 'safetyConcern');
+    expect(map['category'], 'safety');
     expect(map['status'], 'resolved');
-    expect(map['reporterId'], 'u');
+    expect(map['reportedBy'], 'u');
   });
 }

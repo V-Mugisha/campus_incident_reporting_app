@@ -29,6 +29,12 @@ class AppColors {
   static const Color tileBlue = Color(0xFF3B82F6);
   static const Color tilePinkBg = Color(0xFFFDE8EC);
   static const Color tilePink = Color(0xFFE5484D);
+
+  static const Color categorySelectedBg = Color(0xFF6C4DF6);
+  static const Color categoryIdleBg = Color(0xFFF1F0F9);
+  static const Color categoryAccent = Color(0xFF3B82F6);
+  static const Color dashedBorder = Color(0xFFCFCBEA);
+  static const Color photoZoneBg = Color(0xFFFAFAFF);
 }
 
 class AppTheme {
@@ -66,6 +72,7 @@ class AppTheme {
         ),
         hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 15),
         errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
+        counterStyle: const TextStyle(color: AppColors.textHint, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.border, width: 1),

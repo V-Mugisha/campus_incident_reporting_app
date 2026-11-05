@@ -1,4 +1,5 @@
 import '../models/incident.dart';
+import '../models/incident_category.dart';
 
 // TODO: replace with IncidentProvider (real Firestore data).
 
@@ -20,19 +21,19 @@ final List<Incident> placeholderIncidents = [
   Incident(
     id: 'p1',
     title: 'Water shortage',
-    category: IncidentCategory.waterShortage,
+    category: IncidentCategory.water,
     description: 'No water in Block B restrooms.',
     status: IncidentStatus.inProgress,
-    reporterId: 'me',
+    reportedBy: 'me',
     createdAt: DateTime.now().subtract(const Duration(hours: 2)),
   ),
   Incident(
     id: 'p2',
     title: 'Broken classroom projector',
-    category: IncidentCategory.brokenFacility,
+    category: IncidentCategory.facilities,
     description: 'Projector in Room 204 will not turn on.',
     status: IncidentStatus.submitted,
-    reporterId: 'me',
+    reportedBy: 'me',
     createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
   ),
   Incident(
@@ -41,7 +42,7 @@ final List<Incident> placeholderIncidents = [
     category: IncidentCategory.sanitation,
     description: 'Bins near the cafeteria are full.',
     status: IncidentStatus.resolved,
-    reporterId: 'me',
+    reportedBy: 'me',
     createdAt: DateTime.now().subtract(const Duration(days: 3)),
   ),
 ];

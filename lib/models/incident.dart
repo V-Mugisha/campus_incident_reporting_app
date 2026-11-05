@@ -1,26 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Categories a student can choose when filing an incident report.
-enum IncidentCategory {
-  brokenFacility('Broken facility'),
-  waterShortage('Water shortage'),
-  electricityOutage('Electricity outage'),
-  damagedFurniture('Damaged furniture'),
-  sanitation('Sanitation'),
-  safetyConcern('Safety concern'),
-  other('Other');
-
-  const IncidentCategory(this.label);
-
-  final String label;
-
-  static IncidentCategory fromName(String? name) {
-    return IncidentCategory.values.firstWhere(
-      (category) => category.name == name,
-      orElse: () => IncidentCategory.other,
-    );
-  }
-}
+import 'incident_category.dart';
 
 /// Lifecycle of an incident report.
 enum IncidentStatus {
@@ -48,9 +28,10 @@ class Incident {
     required this.category,
     required this.description,
     required this.status,
-    required this.reporterId,
+    required this.reportedBy,
     required this.createdAt,
-    this.photoUrl,
+    this.location,
+    this.imageUrl,
     this.updatedAt,
   });
 
@@ -58,9 +39,10 @@ class Incident {
   final String title;
   final IncidentCategory category;
   final String description;
-  final String? photoUrl;
+  final String? location;
+  final String? imageUrl;
   final IncidentStatus status;
-  final String reporterId;
+  final String reportedBy;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -68,11 +50,12 @@ class Incident {
     return Incident(
       id: id,
       title: data['title'] as String? ?? '',
-      category: IncidentCategory.fromName(data['category'] as String?),
+      category: IncidentCategory.fromKey(data['category'] as String?),
       description: data['description'] as String? ?? '',
-      photoUrl: data['photoUrl'] as String?,
+      location: data['location'] as String?,
+      imageUrl: data['imageUrl'] as String?,
       status: IncidentStatus.fromName(data['status'] as String?),
-      reporterId: data['reporterId'] as String? ?? '',
+      reportedBy: data['reportedBy'] as String? ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -81,11 +64,12 @@ class Incident {
   Map<String, dynamic> toFirestore() {
     return {
       'title': title,
-      'category': category.name,
+      'category': category.key,
       'description': description,
-      'photoUrl': photoUrl,
+      'location': location,
+      'imageUrl': imageUrl,
       'status': status.name,
-      'reporterId': reporterId,
+      'reportedBy': reportedBy,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt == null ? null : Timestamp.fromDate(updatedAt!),
     };

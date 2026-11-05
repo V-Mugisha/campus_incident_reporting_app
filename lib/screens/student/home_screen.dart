@@ -6,11 +6,12 @@ import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/snackbar.dart';
 import '../../widgets/incident_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/summary_card.dart';
 import '../../widgets/user_avatar.dart';
-import 'report_placeholder_screen.dart';
+import 'report_incident_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -40,11 +41,19 @@ class HomeScreen extends StatelessWidget {
               _Header(userName: user?.firstName ?? ''),
               const SizedBox(height: 24),
               _HeroBanner(
-                onReport: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const ReportPlaceholderScreen(),
-                  ),
-                ),
+                onReport: () async {
+                  final submitted = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                      builder: (_) => const ReportIncidentScreen(),
+                    ),
+                  );
+                  if (submitted == true && context.mounted) {
+                    showSuccessSnackBar(
+                      context,
+                      'Report submitted successfully',
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 28),
               SectionHeader(

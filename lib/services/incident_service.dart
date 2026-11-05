@@ -1,18 +1,14 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 import '../models/incident.dart';
+import '../models/incident_category.dart';
 
-/// Wraps Cloud Firestore and Firebase Storage for incident reports.
+/// Wraps Cloud Firestore for incident reports.
 class IncidentService {
-  IncidentService({FirebaseFirestore? firestore, FirebaseStorage? storage})
-      : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+  IncidentService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
 
   Stream<List<Incident>> streamIncidents() {
     return _firestore
@@ -27,25 +23,31 @@ class IncidentService {
   }
 
   Future<void> submitIncident({
-    required String title,
     required IncidentCategory category,
+    required String title,
     required String description,
-    required String reporterId,
-    File? photo,
+    required String reportedBy,
+    required String reportedByName,
+    String? location,
   }) async {
-    String? photoUrl;
-    if (photo != null) {
-      photoUrl = await _uploadPhoto(photo, reporterId);
-    }
-
     await _firestore.collection('incidents').add({
       'title': title,
-      'category': category.name,
+      'category': category.key,
       'description': description,
-      'photoUrl': photoUrl,
+      'location': location,
+      'imageUrl': null,
       'status': IncidentStatus.submitted.name,
-      'reporterId': reporterId,
+      'reportedBy': reportedBy,
+      'reportedByName': reportedByName,
       'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'statusHistory': [
+        {
+          'status': IncidentStatus.submitted.name,
+          'changedBy': reportedBy,
+          'timestamp': Timestamp.now(),
+        },
+      ],
     });
   }
 
@@ -54,13 +56,5 @@ class IncidentService {
       'status': status.name,
       'updatedAt': FieldValue.serverTimestamp(),
     });
-  }
-
-  Future<String> _uploadPhoto(File photo, String reporterId) async {
-    final name =
-        'incident_photos/${reporterId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final ref = _storage.ref(name);
-    await ref.putFile(photo);
-    return ref.getDownloadURL();
   }
 }
