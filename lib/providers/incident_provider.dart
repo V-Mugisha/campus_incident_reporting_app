@@ -95,7 +95,8 @@ class IncidentProvider extends ChangeNotifier {
         _loading = false;
         notifyListeners();
       },
-      onError: (Object _) {
+      onError: (Object e) {
+        debugPrint('watchMyIncidents error: $e');
         _loading = false;
         _errorMessage = "Couldn't load your reports.";
         notifyListeners();

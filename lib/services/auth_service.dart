@@ -81,9 +81,32 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Future<AppUser> fetchProfile(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
-    final data = doc.data();
+    final docRef = _firestore.collection('users').doc(uid);
+    final doc = await docRef.get();
     final authUser = _auth.currentUser;
+
+    if (!doc.exists) {
+      final displayName = authUser?.displayName;
+      final name = (displayName != null && displayName.isNotEmpty)
+          ? displayName
+          : 'Test Student';
+      final email = authUser?.email ?? '';
+      await docRef.set({
+        'name': name,
+        'email': email,
+        'role': UserRole.student.name,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return AppUser(
+        id: uid,
+        name: name,
+        email: email,
+        role: UserRole.student,
+        createdAt: DateTime.now(),
+      );
+    }
+
+    final data = doc.data();
     return AppUser(
       id: uid,
       name: data?['name'] as String? ?? authUser?.displayName ?? '',

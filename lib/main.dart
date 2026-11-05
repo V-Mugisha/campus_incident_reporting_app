@@ -47,14 +47,27 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
+    final String stateKey;
+    final Widget screen;
     if (auth.initializing) {
-      return const Scaffold(
+      stateKey = 'loading';
+      screen = const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
+    } else if (!auth.isSignedIn) {
+      stateKey = 'login';
+      screen = const LoginScreen();
+    } else if (auth.isStaff) {
+      stateKey = 'staff';
+      screen = const StaffPlaceholderScreen();
+    } else {
+      stateKey = 'student';
+      screen = const StudentShell();
     }
 
-    if (!auth.isSignedIn) return const LoginScreen();
-    if (auth.isStaff) return const StaffPlaceholderScreen();
-    return const StudentShell();
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: KeyedSubtree(key: ValueKey(stateKey), child: screen),
+    );
   }
 }

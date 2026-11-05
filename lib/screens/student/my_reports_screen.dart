@@ -107,7 +107,7 @@ class MyReportsScreen extends StatelessWidget {
       );
     }
 
-    if (p.errorMessage != null) {
+    if (p.errorMessage != null && p.allMine.isEmpty) {
       return ErrorState(
         title: "Couldn't load your reports",
         onRetry: () => p.startListening(

@@ -72,7 +72,14 @@ class _LoginScreenState extends State<LoginScreen>
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
-    if (!ok && mounted) {
+    if (!mounted) return;
+    if (ok) {
+      final name = auth.currentUser?.firstName;
+      showSuccessSnackBar(
+        context,
+        (name != null && name.isNotEmpty) ? 'Welcome back, $name!' : 'Welcome back!',
+      );
+    } else {
       showErrorSnackBar(
         context,
         auth.errorMessage ?? 'Something went wrong. Please try again.',

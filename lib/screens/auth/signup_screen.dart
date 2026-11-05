@@ -89,7 +89,13 @@ class _SignupScreenState extends State<SignupScreen>
       password: _passwordController.text,
       department: department.isEmpty ? null : department,
     );
-    if (!ok && mounted) {
+    if (!mounted) return;
+    if (ok) {
+      showSuccessSnackBar(
+        context,
+        'Welcome to CampusCare, ${_nameController.text.trim()}!',
+      );
+    } else {
       showErrorSnackBar(
         context,
         auth.errorMessage ?? 'Something went wrong. Please try again.',
