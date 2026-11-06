@@ -1,24 +1,27 @@
-// One-off dev script: seed the pre-built staff account.
+// One-off dev script: seed the two demo accounts used for grading/demos.
 //
-// Creates (or reuses) the Auth user and writes the matching `users/{uid}`
-// Firestore document with role `staff`, so `AuthProvider.isStaff` routes to
-// the staff shell. Idempotent — safe to re-run.
+// Creates (or reuses) each Auth user and writes the matching `users/{uid}`
+// Firestore document so role-based access works in the app.
+//
+//   Staff  -> staff@gmail.com / admin123        (role: staff,   name: Staff Test)
+//   Student-> smoketest@example.com / smoketest123 (role: student, name: Test Student)
+//
+// IMPORTANT: run this BEFORE deploying `firestore.rules` (or while Firestore
+// has test-mode / no rules). The deployed rules allow users to create only a
+// `student` profile and forbid updating an existing one, so a staff profile
+// cannot be written by this script once those rules are live.
 //
 // Uses only the Firebase REST APIs over dart:io, so no service account or
 // extra dependencies are required. The web API key below is the client key
 // already committed in lib/firebase_options.dart.
 //
-// Usage: dart run tool/seed_staff.dart
+// Usage: dart run tool/seed_demo_users.dart
 
 import 'dart:convert';
 import 'dart:io';
 
 const String apiKey = 'AIzaSyAT-L-GaxIdGCpTcaTmDHew3xZ3GPQDKqI';
 const String projectId = 'campus-incident-reportin-3ea44';
-
-const String email = 'staff@gmail.com';
-const String password = 'admin123';
-const String name = 'Staff Test';
 
 const String authBase = 'https://identitytoolkit.googleapis.com/v1/accounts';
 const String firestoreBase =
@@ -52,19 +55,34 @@ Future<Map<String, dynamic>> _request(
   }
 }
 
-Future<Map<String, dynamic>> _signUp() => _request(
+Future<(String, String)> _resolveUser(String email, String password) async {
+  try {
+    final signUp = await _request(
       'POST',
       Uri.parse('$authBase:signUp?key=$apiKey'),
       body: {'email': email, 'password': password, 'returnSecureToken': true},
     );
-
-Future<Map<String, dynamic>> _signIn() => _request(
+    stdout.writeln('Created Auth user: $email');
+    return (signUp['localId'] as String, signUp['idToken'] as String);
+  } on HttpException catch (e) {
+    if (!e.message.contains('EMAIL_EXISTS')) rethrow;
+    final signIn = await _request(
       'POST',
       Uri.parse('$authBase:signInWithPassword?key=$apiKey'),
       body: {'email': email, 'password': password, 'returnSecureToken': true},
     );
+    stdout.writeln('Auth user already exists, reusing: $email');
+    return (signIn['localId'] as String, signIn['idToken'] as String);
+  }
+}
 
-Future<void> _writeRoleDoc(String uid, String idToken) async {
+Future<void> _writeProfile(
+  String uid,
+  String idToken,
+  String email,
+  String name,
+  String role,
+) async {
   await _request(
     'PATCH',
     Uri.parse('$firestoreBase/users/$uid'),
@@ -73,38 +91,34 @@ Future<void> _writeRoleDoc(String uid, String idToken) async {
       'fields': {
         'name': {'stringValue': name},
         'email': {'stringValue': email},
-        'role': {'stringValue': 'staff'},
+        'role': {'stringValue': role},
         'createdAt': {
           'timestampValue': DateTime.now().toUtc().toIso8601String(),
         },
       },
     },
   );
+  stdout.writeln('Wrote users/$uid with role = $role');
 }
 
 Future<void> main() async {
-  String? uid;
-  String? idToken;
+  final staff = await _resolveUser('staff@gmail.com', 'admin123');
+  await _writeProfile(
+    staff.$1,
+    staff.$2,
+    'staff@gmail.com',
+    'Staff Test',
+    'staff',
+  );
 
-  try {
-    final signUp = await _signUp();
-    uid = signUp['localId'] as String?;
-    idToken = signUp['idToken'] as String?;
-    stdout.writeln('Created Auth user: $email');
-  } on HttpException catch (e) {
-    if (!e.message.contains('EMAIL_EXISTS')) rethrow;
-    final signIn = await _signIn();
-    uid = signIn['localId'] as String?;
-    idToken = signIn['idToken'] as String?;
-    stdout.writeln('Auth user already exists, reusing: $email');
-  }
+  final student = await _resolveUser('smoketest@example.com', 'smoketest123');
+  await _writeProfile(
+    student.$1,
+    student.$2,
+    'smoketest@example.com',
+    'Test Student',
+    'student',
+  );
 
-  if (uid == null || idToken == null) {
-    stderr.writeln('Failed to resolve a user id/token. Aborting.');
-    exit(1);
-  }
-
-  await _writeRoleDoc(uid, idToken);
-  stdout.writeln('Wrote users/$uid with role = staff');
-  stdout.writeln('Done. Sign in with $email / $password in the app.');
+  stdout.writeln('Done. Both demo accounts are ready.');
 }
