@@ -45,7 +45,7 @@ void main() {
 
     test('rejects non-ALU or wrong-shape emails', () {
       const message =
-          'Use your ALU student email (e.g. a.lastname@alustudent.com)';
+          'Use your ALU student email (@alustudent.com)';
       expect(studentEmail('amuhawenim@alustudent.com'), message);
       expect(studentEmail('1.muhawenim@alustudent.com'), message);
       expect(studentEmail('a.muhawenim@alueducation.com'), message);

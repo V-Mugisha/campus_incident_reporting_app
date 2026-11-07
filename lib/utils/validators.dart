@@ -26,7 +26,7 @@ String? studentEmail(String? value) {
   final v = value?.trim() ?? '';
   if (v.isEmpty) return 'Email is required';
   if (!_studentEmailRegex.hasMatch(v)) {
-    return 'Use your ALU student email (e.g. a.lastname@alustudent.com)';
+    return 'Use your ALU student email (@alustudent.com)';
   }
   return null;
 }
