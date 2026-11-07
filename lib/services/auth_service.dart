@@ -20,8 +20,6 @@ abstract class AuthService {
 
   Future<void> signOut();
 
-  Future<void> sendPasswordResetEmail(String email);
-
   /// Loads the full profile for a user id from `users/{uid}`.
   Future<AppUser> fetchProfile(String uid);
 }
@@ -73,11 +71,6 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Future<void> signOut() => _auth.signOut();
-
-  @override
-  Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email);
-  }
 
   @override
   Future<AppUser> fetchProfile(String uid) async {

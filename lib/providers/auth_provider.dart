@@ -63,10 +63,6 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  Future<bool> sendPasswordResetEmail(String email) {
-    return _guard(() => _authService.sendPasswordResetEmail(email));
-  }
-
   Future<void> signOut() async {
     await _authService.signOut();
     _currentUser = null;

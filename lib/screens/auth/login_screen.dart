@@ -95,21 +95,6 @@ class _LoginScreenState extends State<LoginScreen>
     });
   }
 
-  Future<void> _openForgotPassword() async {
-    final sent = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => const _ForgotPasswordSheet(),
-    );
-    if (sent == true && mounted) {
-      showSuccessSnackBar(context, 'Reset link sent. Check your email.');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<AuthProvider>().isLoading;
@@ -185,28 +170,6 @@ class _LoginScreenState extends State<LoginScreen>
                                     onSubmitted: (_) => _submit(),
                                     enabled: !isLoading,
                                   ),
-                                  const SizedBox(height: 8),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: InkWell(
-                                      onTap: isLoading
-                                          ? null
-                                          : _openForgotPassword,
-                                      child: const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 4,
-                                        ),
-                                        child: Text(
-                                          'Forgot password?',
-                                          style: TextStyle(
-                                            color: AppColors.primary,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
                                   const SizedBox(height: AppSpacing.formGap),
                                   PrimaryButton(
                                     label: 'Log In',
@@ -262,94 +225,6 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ForgotPasswordSheet extends StatefulWidget {
-  const _ForgotPasswordSheet();
-
-  @override
-  State<_ForgotPasswordSheet> createState() => _ForgotPasswordSheetState();
-}
-
-class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  bool _sending = false;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _send() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _sending = true);
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.sendPasswordResetEmail(_emailController.text.trim());
-    if (!mounted) return;
-    setState(() => _sending = false);
-    if (ok) {
-      Navigator.of(context).pop(true);
-    } else {
-      showErrorSnackBar(
-        context,
-        auth.errorMessage ?? 'Something went wrong. Please try again.',
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppSpacing.screenPadding,
-        right: AppSpacing.screenPadding,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Reset password',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Enter your email and we will send you a reset link.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: AppSpacing.formGap),
-            AppTextField(
-              label: 'Email',
-              hint: 'you@alustudent.com',
-              prefixIcon: Icons.mail_outline_rounded,
-              controller: _emailController,
-              validator: validateEmail,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _send(),
-              enabled: !_sending,
-            ),
-            const SizedBox(height: AppSpacing.formGap),
-            PrimaryButton(
-              label: 'Send reset link',
-              isLoading: _sending,
-              onPressed: _send,
-            ),
-          ],
         ),
       ),
     );
