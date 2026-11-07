@@ -7,17 +7,20 @@ import '../theme/app_theme.dart';
 import '../utils/snackbar.dart';
 import 'dashed_border_painter.dart';
 
-/// Optional photo field: pick from gallery/camera and preview, no upload.
+/// Optional photo field: pick from gallery/camera, preview, and show an
+/// already-saved image when editing.
 class PhotoPickerField extends StatelessWidget {
   const PhotoPickerField({
     super.key,
     required this.value,
     required this.onChanged,
+    this.existingImageUrl,
     this.enabled = true,
   });
 
   final File? value;
   final ValueChanged<File?> onChanged;
+  final String? existingImageUrl;
   final bool enabled;
 
   Future<void> _pick(BuildContext context, ImageSource source) async {
@@ -103,17 +106,39 @@ class PhotoPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (value == null) {
-      return GestureDetector(
-        onTap: enabled ? () => _showSheet(context) : null,
-        child: const _EmptyState(),
+    if (value != null) {
+      return _Preview(
+        image: Image.file(value!, fit: BoxFit.cover, cacheWidth: 1600),
+        enabled: enabled,
+        onRemove: () => onChanged(null),
+        onChange: () => _showSheet(context),
       );
     }
-    return _Preview(
-      file: value!,
-      enabled: enabled,
-      onRemove: () => onChanged(null),
-      onChange: () => _showSheet(context),
+
+    final existing = existingImageUrl;
+    if (existing != null && existing.isNotEmpty) {
+      return _Preview(
+        image: Image.network(
+          existing,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => Container(
+            color: AppColors.border,
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.broken_image_outlined,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        enabled: enabled,
+        onRemove: () => onChanged(null),
+        onChange: () => _showSheet(context),
+      );
+    }
+
+    return GestureDetector(
+      onTap: enabled ? () => _showSheet(context) : null,
+      child: const _EmptyState(),
     );
   }
 }
@@ -166,13 +191,13 @@ class _EmptyState extends StatelessWidget {
 
 class _Preview extends StatelessWidget {
   const _Preview({
-    required this.file,
+    required this.image,
     required this.enabled,
     required this.onRemove,
     required this.onChange,
   });
 
-  final File file;
+  final Widget image;
   final bool enabled;
   final VoidCallback onRemove;
   final VoidCallback onChange;
@@ -187,7 +212,7 @@ class _Preview extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.file(file, fit: BoxFit.cover, cacheWidth: 1600),
+            image,
             Positioned(
               top: 8,
               right: 8,

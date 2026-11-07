@@ -36,6 +36,7 @@ class _FakeService implements IncidentService {
     required String reportedBy,
     required String reportedByName,
     String? location,
+    String? imageUrl,
   }) async {}
 
   @override
@@ -52,6 +53,7 @@ class _FakeService implements IncidentService {
     required String title,
     required String description,
     String? location,
+    String? imageUrl,
   }) async {}
 
   @override

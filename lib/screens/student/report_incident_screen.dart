@@ -42,6 +42,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   IncidentCategory? _category;
   String? _location;
   File? _photo;
+  String? _existingImageUrl;
   bool _autovalidate = false;
 
   String _initialTitle = '';
@@ -49,6 +50,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   IncidentCategory? _initialCategory;
   String? _initialLocation;
   String _initialSpecify = '';
+  String? _initialImageUrl;
 
   @override
   void initState() {
@@ -77,6 +79,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     _initialCategory = _category;
     _initialLocation = _location;
     _initialSpecify = _specifyLocationController.text.trim();
+    _existingImageUrl = editing.imageUrl;
+    _initialImageUrl = editing.imageUrl;
   }
 
   bool get _isDirty {
@@ -86,6 +90,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           _category != _initialCategory ||
           _location != _initialLocation ||
           _specifyLocationController.text.trim() != _initialSpecify ||
+          _existingImageUrl != _initialImageUrl ||
           _photo != null;
     }
     return _category != null ||
@@ -183,6 +188,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             title: _titleController.text.trim(),
             description: _descriptionController.text.trim(),
             location: location,
+            currentImageUrl: _existingImageUrl,
+            photo: _photo,
           )
         : await incidents.submitIncident(
             category: _category!,
@@ -190,6 +197,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             description: _descriptionController.text.trim(),
             location: location,
             reporter: reporter,
+            photo: _photo,
           );
 
     if (!mounted) return;
@@ -345,7 +353,13 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                                 const SizedBox(height: 8),
                                 PhotoPickerField(
                                   value: _photo,
-                                  onChanged: (f) => setState(() => _photo = f),
+                                  existingImageUrl: _existingImageUrl,
+                                  onChanged: (f) => setState(() {
+                                    _photo = f;
+                                    if (f == null) {
+                                      _existingImageUrl = null;
+                                    }
+                                  }),
                                   enabled: !isSubmitting,
                                 ),
                               ],

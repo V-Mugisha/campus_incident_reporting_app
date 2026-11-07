@@ -1,19 +1,25 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
 import '../models/app_user.dart';
 import '../models/incident.dart';
 import '../models/incident_category.dart';
+import '../services/image_upload_service.dart';
 import '../services/incident_service.dart';
 import '../utils/incident_filters.dart';
 
 /// Holds the signed-in student's reports plus search/filter state.
 class IncidentProvider extends ChangeNotifier {
-  IncidentProvider({IncidentService? service})
-      : _service = service ?? FirebaseIncidentService();
+  IncidentProvider({
+    IncidentService? service,
+    ImageUploadService? imageUploader,
+  })  : _service = service ?? FirebaseIncidentService(),
+        _imageUploader = imageUploader ?? CloudinaryImageUploadService();
 
   final IncidentService _service;
+  final ImageUploadService _imageUploader;
 
   List<Incident> _allMine = [];
   StreamSubscription<List<Incident>>? _subscription;
@@ -128,10 +134,23 @@ class IncidentProvider extends ChangeNotifier {
     required String description,
     required AppUser reporter,
     String? location,
+    File? photo,
   }) async {
     _isSubmitting = true;
     _submitError = null;
     notifyListeners();
+
+    String? imageUrl;
+    if (photo != null) {
+      try {
+        imageUrl = await _imageUploader.upload(photo);
+      } catch (_) {
+        _isSubmitting = false;
+        _submitError = "Couldn't upload your photo. Please try again.";
+        notifyListeners();
+        return false;
+      }
+    }
 
     try {
       await _service.submitIncident(
@@ -139,6 +158,7 @@ class IncidentProvider extends ChangeNotifier {
         title: title,
         description: description,
         location: location,
+        imageUrl: imageUrl,
         reportedBy: reporter.id,
         reportedByName: reporter.name,
       );
@@ -159,10 +179,24 @@ class IncidentProvider extends ChangeNotifier {
     required String title,
     required String description,
     String? location,
+    String? currentImageUrl,
+    File? photo,
   }) async {
     _isSubmitting = true;
     _submitError = null;
     notifyListeners();
+
+    var imageUrl = currentImageUrl;
+    if (photo != null) {
+      try {
+        imageUrl = await _imageUploader.upload(photo);
+      } catch (_) {
+        _isSubmitting = false;
+        _submitError = "Couldn't upload your photo. Please try again.";
+        notifyListeners();
+        return false;
+      }
+    }
 
     try {
       await _service.updateIncident(
@@ -171,6 +205,7 @@ class IncidentProvider extends ChangeNotifier {
         title: title,
         description: description,
         location: location,
+        imageUrl: imageUrl,
       );
       _isSubmitting = false;
       notifyListeners();

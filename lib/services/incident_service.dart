@@ -22,6 +22,7 @@ abstract class IncidentService {
     required String reportedBy,
     required String reportedByName,
     String? location,
+    String? imageUrl,
   });
 
   Future<void> updateStatus({
@@ -37,6 +38,7 @@ abstract class IncidentService {
     required String title,
     required String description,
     String? location,
+    String? imageUrl,
   });
 
   /// Deletes an incident (student delete, submitted only).
@@ -94,13 +96,14 @@ class FirebaseIncidentService implements IncidentService {
     required String reportedBy,
     required String reportedByName,
     String? location,
+    String? imageUrl,
   }) async {
     await _firestore.collection('incidents').add({
       'title': title,
       'category': category.key,
       'description': description,
       'location': location,
-      'imageUrl': null,
+      'imageUrl': imageUrl,
       'status': IncidentStatus.submitted.name,
       'reportedBy': reportedBy,
       'reportedByName': reportedByName,
@@ -142,12 +145,14 @@ class FirebaseIncidentService implements IncidentService {
     required String title,
     required String description,
     String? location,
+    String? imageUrl,
   }) async {
     await _firestore.collection('incidents').doc(id).update({
       'title': title,
       'category': category.key,
       'description': description,
       'location': location,
+      'imageUrl': imageUrl,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

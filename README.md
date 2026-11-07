@@ -62,7 +62,8 @@ accepted: students use `@alustudent.com`, staff use `@alueducation.com`.
 
 - Sign up and log in with email and password (Firebase Authentication)
 - Students: submit reports (category, title, description, location, optional
-  photo), browse and filter their own reports, and track the status timeline
+  photo uploaded to Cloudinary), browse and filter their own reports, and track
+  the status timeline
 - Staff: review all reports, search and filter by status, and update the status
   (start progress / mark resolved / reopen)
 - Role-based access: only staff can update statuses, enforced by both the UI and
@@ -72,7 +73,15 @@ accepted: students use `@alustudent.com`, staff use `@alueducation.com`.
 
 - Flutter (Dart)
 - Firebase Authentication and Cloud Firestore
+- Cloudinary (unsigned image uploads for incident photos)
 - Provider (state management)
+
+## Photos
+
+Incident photos are uploaded to Cloudinary (cloud `victormugisha`, unsigned
+preset `incident_report_app`) when a report is submitted. The returned
+`secure_url` is stored in the incident's `imageUrl` field. Editing a report can
+replace or remove the photo while the report is still `submitted`.
 
 ## Firebase configuration (already done)
 
