@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/incident.dart';
 import '../../models/incident_category.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/incident_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../utils/snackbar.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_text_field.dart';
@@ -17,7 +19,10 @@ import '../../widgets/photo_picker_field.dart';
 import '../../widgets/primary_button.dart';
 
 class ReportIncidentScreen extends StatefulWidget {
-  const ReportIncidentScreen({super.key});
+  const ReportIncidentScreen({super.key, this.editing});
+
+  /// When set, the screen edits this report instead of creating a new one.
+  final Incident? editing;
 
   @override
   State<ReportIncidentScreen> createState() => _ReportIncidentScreenState();
@@ -39,13 +44,57 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   File? _photo;
   bool _autovalidate = false;
 
-  bool get _isDirty =>
-      _category != null ||
-      _titleController.text.trim().isNotEmpty ||
-      _descriptionController.text.trim().isNotEmpty ||
-      _location != null ||
-      _specifyLocationController.text.trim().isNotEmpty ||
-      _photo != null;
+  String _initialTitle = '';
+  String _initialDescription = '';
+  IncidentCategory? _initialCategory;
+  String? _initialLocation;
+  String _initialSpecify = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final editing = widget.editing;
+    if (editing == null) return;
+
+    _category = editing.category;
+    _titleController.text = editing.title;
+    _descriptionController.text = editing.description;
+
+    final location = editing.location;
+    if (location != null && location.isNotEmpty) {
+      if (campusLocations.contains(location) && location != 'Other') {
+        _location = location;
+      } else {
+        _location = 'Other';
+        if (location != 'Other') {
+          _specifyLocationController.text = location;
+        }
+      }
+    }
+
+    _initialTitle = _titleController.text.trim();
+    _initialDescription = _descriptionController.text.trim();
+    _initialCategory = _category;
+    _initialLocation = _location;
+    _initialSpecify = _specifyLocationController.text.trim();
+  }
+
+  bool get _isDirty {
+    if (widget.editing != null) {
+      return _titleController.text.trim() != _initialTitle ||
+          _descriptionController.text.trim() != _initialDescription ||
+          _category != _initialCategory ||
+          _location != _initialLocation ||
+          _specifyLocationController.text.trim() != _initialSpecify ||
+          _photo != null;
+    }
+    return _category != null ||
+        _titleController.text.trim().isNotEmpty ||
+        _descriptionController.text.trim().isNotEmpty ||
+        _location != null ||
+        _specifyLocationController.text.trim().isNotEmpty ||
+        _photo != null;
+  }
 
   @override
   void dispose() {
@@ -126,13 +175,22 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     }
 
     final incidents = context.read<IncidentProvider>();
-    final ok = await incidents.submitIncident(
-      category: _category!,
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      location: location,
-      reporter: reporter,
-    );
+    final editing = widget.editing;
+    final ok = editing != null
+        ? await incidents.updateIncident(
+            id: editing.id,
+            category: _category!,
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            location: location,
+          )
+        : await incidents.submitIncident(
+            category: _category!,
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            location: location,
+            reporter: reporter,
+          );
 
     if (!mounted) return;
     if (ok) {
@@ -140,7 +198,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     } else {
       showErrorSnackBar(
         context,
-        incidents.submitError ?? "Couldn't submit your report. Please try again.",
+        incidents.submitError ??
+            (editing != null
+                ? "Couldn't update your report. Please try again."
+                : "Couldn't submit your report. Please try again."),
       );
     }
   }
@@ -173,11 +234,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _TopBar(onBack: () => Navigator.maybePop(context)),
+                    _TopBar(
+                      onBack: () => Navigator.maybePop(context),
+                      title: widget.editing != null
+                          ? 'Edit Report'
+                          : 'Report an Incident',
+                    ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Tell us what happened so campus staff can act quickly.',
-                      style: TextStyle(
+                    Text(
+                      widget.editing != null
+                          ? 'Update the details of your report.'
+                          : 'Tell us what happened so campus staff can act quickly.',
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
                       ),
@@ -202,6 +270,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 CategorySelector(
+                                  initialValue: _category?.key,
                                   onChanged: (key) => setState(
                                     () => _category =
                                         IncidentCategory.fromKey(key),
@@ -242,6 +311,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                                 const FormSectionLabel(label: 'Location'),
                                 const SizedBox(height: 8),
                                 LocationDropdown(
+                                  initialValue: _location,
                                   onChanged: (v) =>
                                       setState(() => _location = v),
                                   validator: validateLocation,
@@ -283,7 +353,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                           ),
                           const SizedBox(height: 32),
                           PrimaryButton(
-                            label: 'Submit Report',
+                            label: widget.editing != null
+                                ? 'Save Changes'
+                                : 'Submit Report',
                             isLoading: isSubmitting,
                             onPressed: _submit,
                           ),
@@ -312,9 +384,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onBack});
+  const _TopBar({required this.onBack, required this.title});
 
   final VoidCallback onBack;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -342,11 +415,11 @@ class _TopBar extends StatelessWidget {
             ),
           ),
         ),
-        const Expanded(
+        Expanded(
           child: Text(
-            'Report an Incident',
+            title,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w700,

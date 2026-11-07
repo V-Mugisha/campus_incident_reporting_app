@@ -11,15 +11,18 @@ class CategorySelector extends StatelessWidget {
     required this.onChanged,
     this.validator,
     this.enabled = true,
+    this.initialValue,
   });
 
   final ValueChanged<String?> onChanged;
   final String? Function(String?)? validator;
   final bool enabled;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
     return FormField<String>(
+      initialValue: initialValue,
       validator: validator,
       builder: (field) {
         return Column(

@@ -44,6 +44,18 @@ class _FakeService implements IncidentService {
     required IncidentStatus status,
     required String changedBy,
   }) async {}
+
+  @override
+  Future<void> updateIncident({
+    required String id,
+    required IncidentCategory category,
+    required String title,
+    required String description,
+    String? location,
+  }) async {}
+
+  @override
+  Future<void> deleteIncident(String id) async {}
 }
 
 class _FakeAuthService implements AuthService {

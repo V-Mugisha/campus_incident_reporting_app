@@ -32,14 +32,22 @@ service cloud.firestore {
     }
 
     // Incidents: any signed-in user reads; students create their own report
-    // as 'submitted'; only staff may update status.
+    // as 'submitted'; staff update status; a student may edit or delete their
+    // own report only while it is still 'submitted'.
     match /incidents/{incidentId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
         && request.resource.data.reportedBy == request.auth.uid
         && request.resource.data.status == 'submitted';
-      allow update: if isStaff();
-      allow delete: if false;
+      allow update: if isStaff()
+        || (isSignedIn()
+            && request.auth.uid == resource.data.reportedBy
+            && resource.data.status == 'submitted'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+                 ['title', 'category', 'description', 'location', 'imageUrl', 'updatedAt']));
+      allow delete: if isSignedIn()
+        && request.auth.uid == resource.data.reportedBy
+        && resource.data.status == 'submitted';
     }
   }
 }

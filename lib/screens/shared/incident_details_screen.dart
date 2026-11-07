@@ -15,6 +15,7 @@ import '../../widgets/section_title.dart';
 import '../../widgets/skeleton_card.dart';
 import '../../widgets/status_chip.dart';
 import '../student/full_screen_image_screen.dart';
+import '../student/report_incident_screen.dart';
 import 'status_timeline.dart';
 
 class IncidentDetailsScreen extends StatefulWidget {
@@ -246,6 +247,7 @@ class _DetailsBody extends StatelessWidget {
               ],
               const SizedBox(height: 24),
               _StatusControlSlot(incident: incident),
+              _ManageReportSlot(incident: incident),
             ],
           ),
         ),
@@ -636,5 +638,165 @@ class _StaffStatusControl extends StatelessWidget {
           (IncidentStatus.inProgress, 'Reopen', false),
         ];
     }
+  }
+}
+
+/// Student-only manage actions (edit/delete) for a report they own that is
+/// still waiting for review.
+class _ManageReportSlot extends StatelessWidget {
+  const _ManageReportSlot({required this.incident});
+
+  final Incident incident;
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final user = auth.currentUser;
+    final canManage = !auth.isStaff &&
+        user != null &&
+        user.id == incident.reportedBy &&
+        incident.status == IncidentStatus.submitted;
+    if (!canManage) return const SizedBox.shrink();
+    return _ManageReportCard(incident: incident);
+  }
+}
+
+class _ManageReportCard extends StatelessWidget {
+  const _ManageReportCard({required this.incident});
+
+  final Incident incident;
+
+  Future<void> _edit(BuildContext context) async {
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ReportIncidentScreen(editing: incident),
+      ),
+    );
+    if (updated == true && context.mounted) {
+      showSuccessSnackBar(context, 'Report updated');
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Delete report?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final incidents = context.read<IncidentProvider>();
+    final ok = await incidents.deleteIncident(incident.id);
+    if (!context.mounted) return;
+    if (ok) {
+      showSuccessSnackBar(context, 'Report deleted');
+      Navigator.of(context).pop(true);
+    } else {
+      showErrorSnackBar(
+        context,
+        incidents.deleteError ??
+            "Couldn't delete your report. Please try again.",
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDeleting = context.watch<IncidentProvider>().isDeleting;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Manage Report',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'You can edit or delete this report while it is waiting for review.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: isDeleting ? null : () => _edit(context),
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text('Edit Report'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              minimumSize: const Size.fromHeight(48),
+              side: const BorderSide(color: AppColors.primary, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: isDeleting ? null : () => _confirmDelete(context),
+            icon: isDeleting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.error,
+                    ),
+                  )
+                : const Icon(Icons.delete_outline_rounded, size: 18),
+            label: const Text('Delete Report'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.error,
+              minimumSize: const Size.fromHeight(48),
+              side: BorderSide(
+                color: AppColors.error.withValues(alpha: 0.5),
+                width: 1.5,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

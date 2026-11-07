@@ -29,6 +29,18 @@ abstract class IncidentService {
     required IncidentStatus status,
     required String changedBy,
   });
+
+  /// Updates the editable content of an incident (student edit, submitted only).
+  Future<void> updateIncident({
+    required String id,
+    required IncidentCategory category,
+    required String title,
+    required String description,
+    String? location,
+  });
+
+  /// Deletes an incident (student delete, submitted only).
+  Future<void> deleteIncident(String id);
 }
 
 /// Firestore-backed implementation of [IncidentService].
@@ -121,5 +133,27 @@ class FirebaseIncidentService implements IncidentService {
         },
       ]),
     });
+  }
+
+  @override
+  Future<void> updateIncident({
+    required String id,
+    required IncidentCategory category,
+    required String title,
+    required String description,
+    String? location,
+  }) async {
+    await _firestore.collection('incidents').doc(id).update({
+      'title': title,
+      'category': category.key,
+      'description': description,
+      'location': location,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future<void> deleteIncident(String id) async {
+    await _firestore.collection('incidents').doc(id).delete();
   }
 }

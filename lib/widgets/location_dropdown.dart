@@ -10,15 +10,18 @@ class LocationDropdown extends StatelessWidget {
     required this.onChanged,
     this.validator,
     this.enabled = true,
+    this.initialValue,
   });
 
   final ValueChanged<String?> onChanged;
   final String? Function(String?)? validator;
   final bool enabled;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
+      initialValue: initialValue,
       onChanged: enabled ? onChanged : null,
       validator: validator,
       isExpanded: true,

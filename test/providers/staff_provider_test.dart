@@ -43,6 +43,18 @@ class FakeIncidentService implements IncidentService {
     updatedStatus = status;
     updatedChangedBy = changedBy;
   }
+
+  @override
+  Future<void> updateIncident({
+    required String id,
+    required IncidentCategory category,
+    required String title,
+    required String description,
+    String? location,
+  }) async {}
+
+  @override
+  Future<void> deleteIncident(String id) async {}
 }
 
 Incident _incident(

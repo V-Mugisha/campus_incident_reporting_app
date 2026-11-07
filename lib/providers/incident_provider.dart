@@ -21,6 +21,8 @@ class IncidentProvider extends ChangeNotifier {
   String? _errorMessage;
   bool _isSubmitting = false;
   String? _submitError;
+  bool _isDeleting = false;
+  String? _deleteError;
 
   String _searchQuery = '';
   String? _statusFilter;
@@ -31,6 +33,8 @@ class IncidentProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isSubmitting => _isSubmitting;
   String? get submitError => _submitError;
+  bool get isDeleting => _isDeleting;
+  String? get deleteError => _deleteError;
 
   String get searchQuery => _searchQuery;
   String? get statusFilter => _statusFilter;
@@ -144,6 +148,54 @@ class IncidentProvider extends ChangeNotifier {
     } catch (_) {
       _isSubmitting = false;
       _submitError = "Couldn't submit your report. Please try again.";
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateIncident({
+    required String id,
+    required IncidentCategory category,
+    required String title,
+    required String description,
+    String? location,
+  }) async {
+    _isSubmitting = true;
+    _submitError = null;
+    notifyListeners();
+
+    try {
+      await _service.updateIncident(
+        id: id,
+        category: category,
+        title: title,
+        description: description,
+        location: location,
+      );
+      _isSubmitting = false;
+      notifyListeners();
+      return true;
+    } catch (_) {
+      _isSubmitting = false;
+      _submitError = "Couldn't update your report. Please try again.";
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteIncident(String id) async {
+    _isDeleting = true;
+    _deleteError = null;
+    notifyListeners();
+
+    try {
+      await _service.deleteIncident(id);
+      _isDeleting = false;
+      notifyListeners();
+      return true;
+    } catch (_) {
+      _isDeleting = false;
+      _deleteError = "Couldn't delete your report. Please try again.";
       notifyListeners();
       return false;
     }
