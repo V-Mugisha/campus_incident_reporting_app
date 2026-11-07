@@ -11,6 +11,11 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff';
     }
 
+    function isAluStudentEmail() {
+      return request.resource.data.email is string
+        && request.resource.data.email.matches('(?i)^[a-z]\\.[^@\\s]+@alustudent\\.com$');
+    }
+
     // Users: read your own profile; create it on registration (student only).
     // Role can never be self-written (prevents privilege escalation) — staff
     // role is seeded out-of-band (admin SDK / console / seed script).
@@ -18,8 +23,12 @@ service cloud.firestore {
       allow read: if isSignedIn() && request.auth.uid == uid;
       allow create: if isSignedIn()
         && request.auth.uid == uid
-        && request.resource.data.role == 'student';
-      allow update, delete: if false;
+        && request.resource.data.role == 'student'
+        && isAluStudentEmail();
+      allow update: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == resource.data.role;
+      allow delete: if false;
     }
 
     // Incidents: any signed-in user reads; students create their own report

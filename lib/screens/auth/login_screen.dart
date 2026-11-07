@@ -153,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     prefixIcon: Icons.mail_outline_rounded,
                                     controller: _emailController,
                                     focusNode: _emailFocus,
-                                    validator: validateEmail,
+                                    validator: aluEmail,
                                     keyboardType: TextInputType.emailAddress,
                                     textInputAction: TextInputAction.next,
                                     autofillHints: const [AutofillHints.email],
@@ -195,8 +195,8 @@ class _LoginScreenState extends State<LoginScreen>
                                         child: _MockUserButton(
                                           label: 'Staff User Mock',
                                           onTap: () => _fillCredentials(
-                                            'staff@gmail.com',
-                                            'admin123',
+                                            'staff@alueducation.com',
+                                            'Campus123',
                                           ),
                                         ),
                                       ),
@@ -205,8 +205,8 @@ class _LoginScreenState extends State<LoginScreen>
                                         child: _MockUserButton(
                                           label: 'Student User Mock',
                                           onTap: () => _fillCredentials(
-                                            'smoketest@example.com',
-                                            'smoketest123',
+                                            'm.victor@alustudent.com',
+                                            'Campus123',
                                           ),
                                         ),
                                       ),

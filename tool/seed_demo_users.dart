@@ -3,8 +3,8 @@
 // Creates (or reuses) each Auth user and writes the matching `users/{uid}`
 // Firestore document so role-based access works in the app.
 //
-//   Staff  -> staff@gmail.com / admin123        (role: staff,   name: Staff Test)
-//   Student-> smoketest@example.com / smoketest123 (role: student, name: Test Student)
+//   Staff  -> staff@alueducation.com / Campus123   (role: staff,   name: Staff Test)
+//   Student-> m.victor@alustudent.com / Campus123  (role: student, name: Test Student)
 //
 // IMPORTANT: run this BEFORE deploying `firestore.rules` (or while Firestore
 // has test-mode / no rules). The deployed rules allow users to create only a
@@ -102,20 +102,21 @@ Future<void> _writeProfile(
 }
 
 Future<void> main() async {
-  final staff = await _resolveUser('staff@gmail.com', 'admin123');
+  final staff = await _resolveUser('staff@alueducation.com', 'Campus123');
   await _writeProfile(
     staff.$1,
     staff.$2,
-    'staff@gmail.com',
+    'staff@alueducation.com',
     'Staff Test',
     'staff',
   );
 
-  final student = await _resolveUser('smoketest@example.com', 'smoketest123');
+  final student =
+      await _resolveUser('m.victor@alustudent.com', 'Campus123');
   await _writeProfile(
     student.$1,
     student.$2,
-    'smoketest@example.com',
+    'm.victor@alustudent.com',
     'Test Student',
     'student',
   );

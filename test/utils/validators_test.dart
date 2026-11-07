@@ -37,6 +37,62 @@ void main() {
     });
   });
 
+  group('studentEmail', () {
+    test('rejects empty', () {
+      expect(studentEmail(null), 'Email is required');
+      expect(studentEmail('   '), 'Email is required');
+    });
+
+    test('rejects non-ALU or wrong-shape emails', () {
+      const message =
+          'Use your ALU student email (e.g. a.lastname@alustudent.com)';
+      expect(studentEmail('amuhawenim@alustudent.com'), message);
+      expect(studentEmail('1.muhawenim@alustudent.com'), message);
+      expect(studentEmail('a.muhawenim@alueducation.com'), message);
+      expect(studentEmail('someone@gmail.com'), message);
+    });
+
+    test('accepts valid ALU student emails', () {
+      expect(studentEmail('a.muhawenim@alustudent.com'), null);
+      expect(studentEmail('j.doe@alustudent.com'), null);
+      expect(studentEmail('d.student@alustudent.com'), null);
+    });
+  });
+
+  group('staffEmail', () {
+    test('rejects empty', () {
+      expect(staffEmail(null), 'Email is required');
+    });
+
+    test('rejects non-ALU email', () {
+      const message = 'Use your ALU staff email (e.g. name@alueducation.com)';
+      expect(staffEmail('bernard@alustudent.com'), message);
+      expect(staffEmail('bernard@gmail.com'), message);
+    });
+
+    test('accepts valid ALU staff email', () {
+      expect(staffEmail('bernard@alueducation.com'), null);
+    });
+  });
+
+  group('aluEmail', () {
+    test('rejects empty', () {
+      expect(aluEmail(null), 'Email is required');
+    });
+
+    test('rejects non-ALU email', () {
+      expect(
+        aluEmail('someone@gmail.com'),
+        'Use your ALU email (student or staff)',
+      );
+    });
+
+    test('accepts student and staff emails', () {
+      expect(aluEmail('d.student@alustudent.com'), null);
+      expect(aluEmail('bernard@alueducation.com'), null);
+    });
+  });
+
   group('validatePassword', () {
     test('rejects empty', () {
       expect(validatePassword(null), 'Password is required');

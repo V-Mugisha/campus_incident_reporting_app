@@ -52,10 +52,11 @@ project `campus-incident-reportin-3ea44`, and all Firebase config is committed.
 The login screen has "Staff User Mock" and "Student User Mock" buttons that
 autofill the form. You can also type the credentials manually:
 
-- Staff: `staff@gmail.com` / `admin123`
-- Student: `smoketest@example.com` / `smoketest123`
+- Staff: `staff@alueducation.com` / `Campus123`
+- Student: `m.victor@alustudent.com` / `Campus123`
 
-Both accounts already exist in the Firebase project.
+Both accounts already exist in the Firebase project. Only ALU addresses are
+accepted: students use `@alustudent.com`, staff use `@alueducation.com`.
 
 ## Features
 

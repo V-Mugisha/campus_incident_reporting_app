@@ -194,11 +194,11 @@ class _SignupScreenState extends State<SignupScreen>
                                   const SizedBox(height: AppSpacing.formGap),
                                   AppTextField(
                                     label: 'Email',
-                                    hint: 'you@alustudent.com',
+                                    hint: 'a.lastname@alustudent.com',
                                     prefixIcon: Icons.mail_outline_rounded,
                                     controller: _emailController,
                                     focusNode: _emailFocus,
-                                    validator: validateEmail,
+                                    validator: studentEmail,
                                     keyboardType: TextInputType.emailAddress,
                                     textInputAction: TextInputAction.next,
                                     autofillHints: const [AutofillHints.email],
